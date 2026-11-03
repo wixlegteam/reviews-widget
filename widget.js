@@ -85,8 +85,11 @@ const GR_CSS = "/* ================= WIDGET STYLES (scoped with .gr-) ==========
     const pid = decoded.match(/place_?id[=:]([A-Za-z0-9_-]{20,})/i) || decoded.match(/!1s(ChIJ[A-Za-z0-9_-]+)/);
     if (pid) { out.placeId = pid[1]; return out; }
 
-    const at = decoded.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-    if (at) out.bias = { lat:+at[1], lng:+at[2] };
+    // Prefer the pinned business coordinates (!3d/!4d); only trust the map-center "@" when zoomed in close
+    const pin = decoded.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    const view = decoded.match(/@(-?\d+\.\d+),(-?\d+\.\d+),(\d+(?:\.\d+)?)z/);
+    if (pin) out.bias = { lat:+pin[1], lng:+pin[2] };
+    else if (view && +view[3] >= 14) out.bias = { lat:+view[1], lng:+view[2] };
 
     const placeName = url.pathname.match(/\/maps\/place\/([^/]+)/);
     if (placeName) out.query = decodeURIComponent(placeName[1]).replace(/\+/g," ");
@@ -105,8 +108,20 @@ const GR_CSS = "/* ================= WIDGET STYLES (scoped with .gr-) ==========
       const req = { textQuery: p.query, fields:["id"], maxResultCount:1 };
       if (p.bias) req.locationBias = { center:p.bias, radius:2000 };
       const { places } = await Place.searchByText(req);
-      if (!places?.length) throw new Error(`No Google business found for "${p.query}".`);
-      id = places[0].id;
+      id = places?.[0]?.id;
+      // Service-area businesses (no public address) are only returned by the REST endpoint with a flag
+      if (!id) {
+        const body = { textQuery: p.query, maxResultCount: 1, includePureServiceAreaBusinesses: true };
+        if (p.bias) body.locationBias = { circle: { center: { latitude: p.bias.lat, longitude: p.bias.lng }, radius: 2000 } };
+        const r = await fetch("https://places.googleapis.com/v1/places:searchText", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Goog-Api-Key": C.apiKey, "X-Goog-FieldMask": "places.id" },
+          body: JSON.stringify(body)
+        });
+        const j = await r.json().catch(() => ({}));
+        id = j.places?.[0]?.id;
+      }
+      if (!id) throw new Error(`No Google business found for "${p.query}".`);
       console.info("[Google Reviews] Matched Place ID:", id, "— set placeId in GR_CONFIG to skip this lookup.");
     }
     try { localStorage.setItem(key, id); } catch(e){}
