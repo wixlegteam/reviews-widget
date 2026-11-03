@@ -278,7 +278,8 @@ var GR_CSS = "/* ================= WIDGET STYLES (scoped with .gr-) ============
   .gs-text{ margin:0; font-size:17px; line-height:1.65; display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
   .gs-card.is-active .gs-text{ color:rgba(255,255,255,.94); }
   .gs-q{ position:absolute; right:26px; bottom:-40px; font:700 150px/1 Georgia,serif; color:var(--gr-star); opacity:.12; pointer-events:none; transition:opacity .5s; }
-  .gs-card.is-active .gs-q{ opacity:.85; }
+  .gs-card.is-active .gs-q{ opacity:.4; }
+  .gs-text, .gs-head, .gs-more{ position:relative; z-index:1; }
   .gs-more{ margin-top:auto; align-self:flex-start; font-size:14px; font-weight:600; color:var(--gr-star); text-decoration:none; opacity:0; transition:opacity .4s; }
   .gs-card.is-active .gs-more{ opacity:1; }
   .gs-more:hover{ text-decoration:underline; text-underline-offset:3px; }
