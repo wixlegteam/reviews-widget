@@ -6,7 +6,7 @@ const GR_CSS = "/* ================= WIDGET STYLES (scoped with .gr-) ==========
     apiKey: "AIzaSyBNUbwX0cg0Wub558JhHhQonX6w3Z4nOEU",   // Wix Legends Reviews key (referrer + API restricted)
     minRating: 4, carousel: true, badge: true, badgeDelayMs: 1500,
     autoplayMs: 6000, cacheHours: 12, debug: false, accent: "#1a73e8", starColor: "#fbbc04",
-    font: "", fontHref: "", title: "", eyebrow: "", buttons: true, textColor: "", headingColor: "", radius: "", buttonRadius: ""
+    font: "", fontHref: "", title: "", eyebrow: "", buttons: false, textColor: "", headingColor: "", radius: "", buttonRadius: ""
   };
   const C = Object.assign({}, AGENCY_DEFAULTS, window.GR_CONFIG || {});
   if (C.apiKey === "PASTE_YOUR_GOOGLE_API_KEY_HERE") C.apiKey = "";

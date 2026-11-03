@@ -29,5 +29,7 @@ window.GR_CONFIG = {
  Optional per-client settings (add inside GR_CONFIG):
    accent: "#0a4d8c",     // client's brand color
    minRating: 5,          // only show 5-star reviews
-   autoplayMs: 0          // stop the carousel from auto-sliding
+   autoplayMs: 0,         // stop the carousel from auto-sliding
+   buttons: true          // show the rating box + "See all / Write a review" buttons
+                          // (default is the clean Wix Legends layout: rating line + review cards)
 ---------------------------------------------------------------------
