@@ -1,0 +1,33 @@
+=====================================================================
+ SNIPPET A — REVIEWS CAROUSEL  (Wix: Add > Embed Code > Embed HTML)
+ Change only the profileUrl line.
+=====================================================================
+<div id="gr-carousel"></div>
+<script>
+window.GR_CONFIG = {
+  profileUrl: "PASTE_CLIENT_GOOGLE_MAPS_LINK_HERE",
+  badge: false
+};
+</script>
+<script src="https://wixlegteam.github.io/reviews-widget/widget.js"></script>
+
+
+=====================================================================
+ SNIPPET B — FLOATING BADGE  (Wix: Settings > Custom Code > Body - end, All pages)
+ Change only the profileUrl line.
+=====================================================================
+<script>
+window.GR_CONFIG = {
+  profileUrl: "PASTE_CLIENT_GOOGLE_MAPS_LINK_HERE",
+  carousel: false
+};
+</script>
+<script src="https://wixlegteam.github.io/reviews-widget/widget.js"></script>
+
+
+---------------------------------------------------------------------
+ Optional per-client settings (add inside GR_CONFIG):
+   accent: "#0a4d8c",     // client's brand color
+   minRating: 5,          // only show 5-star reviews
+   autoplayMs: 0          // stop the carousel from auto-sliding
+---------------------------------------------------------------------
