@@ -6,7 +6,7 @@ const GR_CSS = "/* ================= WIDGET STYLES (scoped with .gr-) ==========
     apiKey: "AIzaSyBNUbwX0cg0Wub558JhHhQonX6w3Z4nOEU",   // Wix Legends Reviews key (referrer + API restricted)
     minRating: 4, carousel: true, badge: true, badgeDelayMs: 1500,
     autoplayMs: 6000, cacheHours: 12, debug: false, accent: "#1a73e8", starColor: "#fbbc04",
-    font: "", fontHref: "", title: "", eyebrow: "", buttons: false, textColor: "", headingColor: "", radius: "", buttonRadius: ""
+    font: "", fontHref: "", title: "", eyebrow: "", buttons: false, layout: "spotlight", textColor: "", headingColor: "", radius: "", buttonRadius: ""
   };
   const C = Object.assign({}, AGENCY_DEFAULTS, window.GR_CONFIG || {});
   if (C.apiKey === "PASTE_YOUR_GOOGLE_API_KEY_HERE") C.apiKey = "";
@@ -253,6 +253,117 @@ const GR_CSS = "/* ================= WIDGET STYLES (scoped with .gr-) ==========
     buildDots(); restart();
   }
 
+  /* ---------- render: spotlight carousel (default) ---------- */
+  const SPOT_CSS = `
+  .gs{ position:relative; padding:4px 0 2px; outline:none; }
+  .gs-top{ display:flex; align-items:center; justify-content:center; gap:14px; margin:0 0 14px; }
+  .gs-score{ font-size:52px; font-weight:800; line-height:1; letter-spacing:-.03em; color:var(--gr-heading,var(--gr-text)); }
+  .gs-sub{ display:flex; align-items:center; gap:6px; margin-top:6px; font-size:14px; font-weight:500; color:var(--gr-muted); }
+  .gs-sub svg{ width:16px; height:16px; }
+  .gs-stage{ position:relative; height:var(--gs-h,372px); overflow:hidden;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);
+            mask-image:linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%); touch-action:pan-y; }
+  .gs-card{ position:absolute; top:14px; left:50%; width:min(560px,74%); height:calc(100% - 46px); box-sizing:border-box;
+    padding:28px 32px 24px; border-radius:var(--gr-radius,18px); background:#fff; color:var(--gr-text);
+    border:1px solid rgba(19,25,70,.07); box-shadow:none;
+    display:flex; flex-direction:column; gap:12px; cursor:pointer; overflow:hidden;
+    transition:transform .7s cubic-bezier(.22,.8,.24,1), opacity .6s, background-color .5s, box-shadow .5s, color .5s; will-change:transform; }
+  .gs-card.is-active{ background:var(--gr-accent); color:#fff; border-color:transparent; cursor:default; z-index:3;
+    box-shadow:0 16px 34px rgba(19,25,70,.26), 0 4px 10px rgba(19,25,70,.14); }
+  .gs-card .gr-author a, .gs-card .gr-author span.name{ font-size:16px; font-weight:700; color:inherit; }
+  .gs-card .gr-time{ color:inherit; opacity:.6; }
+  .gs-card .gr-avatar{ width:48px; height:48px; box-shadow:0 0 0 3px rgba(255,255,255,.9); }
+  .gs-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .gs-g{ width:22px; height:22px; flex:none; background:#fff; border-radius:50%; padding:4px; box-sizing:content-box; }
+  .gs-text{ margin:0; font-size:17px; line-height:1.65; display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
+  .gs-card.is-active .gs-text{ color:rgba(255,255,255,.94); }
+  .gs-q{ position:absolute; right:26px; bottom:-40px; font:700 150px/1 Georgia,serif; color:var(--gr-star); opacity:.12; pointer-events:none; transition:opacity .5s; }
+  .gs-card.is-active .gs-q{ opacity:.85; }
+  .gs-more{ margin-top:auto; align-self:flex-start; font-size:14px; font-weight:600; color:var(--gr-star); text-decoration:none; opacity:0; transition:opacity .4s; }
+  .gs-card.is-active .gs-more{ opacity:1; }
+  .gs-more:hover{ text-decoration:underline; text-underline-offset:3px; }
+  .gs-nav{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:6px; }
+  .gs-arrow{ width:44px; height:44px; border-radius:50%; border:1px solid rgba(19,25,70,.15); background:#fff; cursor:pointer; display:grid; place-items:center; transition:border-color .2s, transform .2s; }
+  .gs-arrow:hover{ border-color:var(--gr-accent); transform:scale(1.06); }
+  .gs-arrow svg{ width:18px; height:18px; stroke:var(--gr-heading,var(--gr-accent)); }
+  .gs-dots{ display:flex; gap:8px; align-items:center; }
+  .gs-dot{ position:relative; width:8px; height:8px; padding:0; border:0; border-radius:99px; background:rgba(19,25,70,.18); cursor:pointer; overflow:hidden; transition:width .35s; }
+  .gs-dot.on{ width:38px; }
+  .gs-dot.on::after{ content:""; position:absolute; inset:0; border-radius:inherit; background:var(--gr-accent); transform-origin:left; animation:gsfill var(--gs-t,6s) linear forwards; }
+  .gs.paused .gs-dot.on::after{ animation-play-state:paused; }
+  .gs.static .gs-dot.on::after{ animation:none; transform:none; }
+  @keyframes gsfill{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+  @media (max-width:620px){
+    .gs-stage{ --gs-h:400px; -webkit-mask-image:none; mask-image:none; }
+    .gs-q{ font-size:110px; right:16px; bottom:-30px; }
+    .gs-card.is-active .gs-q{ opacity:.45; }
+    .gs-card{ width:84%; padding:22px 22px 20px; }
+    .gs-text{ font-size:15.5px; -webkit-line-clamp:7; }
+    .gs-score{ font-size:42px; }
+  }
+  @media (prefers-reduced-motion:reduce){ .gs-card{ transition:none; } .gs-dot.on::after{ animation:none; } }`;
+
+  function renderSpotlight(mount, d, reviews){
+    if (!document.getElementById("gs-styles")) { const st = document.createElement("style"); st.id = "gs-styles"; st.textContent = SPOT_CSS; document.head.appendChild(st); }
+    const n = reviews.length; let idx = 0, timer = null;
+    mount.classList.add("gr-root","gs");
+    if (C.autoplayMs) mount.style.setProperty("--gs-t", C.autoplayMs + "ms"); else mount.classList.add("static");
+    mount.innerHTML = `
+      ${d.demo ? `<span class="gr-demo-flag">Demo data - add your API key &amp; profile link</span>` : ""}
+      ${(C.eyebrow || C.title) ? `<div class="gr-intro">${C.eyebrow ? `<span class="gr-eyebrow">${esc(C.eyebrow)}</span>` : ""}${C.title ? `<h2 class="gr-title">${esc(C.title)}</h2>` : ""}</div>` : ""}
+      <div class="gs-top">
+        <div class="gs-score">${d.rating.toFixed(1)}</div>
+        <div>${stars(d.rating,24)}<div class="gs-sub">${gLogo("")} Based on ${d.count} Google reviews</div></div>
+      </div>
+      <div class="gs-stage">
+        ${reviews.map((r,i) => `
+          <article class="gs-card" data-i="${i}">
+            <div class="gs-head"><div class="gr-author">${avatar(r)}<div>${authorName(r)}<div class="gr-time">${esc(r.time)}</div></div></div>${gLogo("gs-g")}</div>
+            ${stars(r.rating,18)}
+            <p class="gs-text">${esc(r.text)}</p>
+            <a class="gs-more" href="${esc(d.mapsUrl)}" target="_blank" rel="noopener" hidden>Read full review &rarr;</a>
+            <span class="gs-q" aria-hidden="true">&rdquo;</span>
+          </article>`).join("")}
+      </div>
+      ${n > 1 ? `<div class="gs-nav">
+        <button class="gs-arrow" data-dir="-1" aria-label="Previous review"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="gs-dots">${reviews.map((_,i) => `<button class="gs-dot" aria-label="Review ${i+1}"></button>`).join("")}</div>
+        <button class="gs-arrow" data-dir="1" aria-label="Next review"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>` : ""}`;
+
+    const cards = [...mount.querySelectorAll(".gs-card")], dots = [...mount.querySelectorAll(".gs-dot")];
+    function place(){
+      const mobile = innerWidth <= 620;
+      const step = mobile ? 92 : 78, sc = mobile ? .9 : .86;
+      cards.forEach((c,i) => {
+        let off = i - idx; if (off > n/2) off -= n; if (off < -n/2) off += n;
+        const a = Math.abs(off);
+        c.classList.toggle("is-active", off === 0);
+        c.style.transform = `translateX(calc(-50% + ${off*step}%)) scale(${off === 0 ? 1 : a === 1 ? sc : .78})`;
+        c.style.opacity = off === 0 ? 1 : a === 1 ? (mobile ? .35 : .55) : 0;
+        c.style.zIndex = String(3 - a);
+        c.setAttribute("aria-hidden", off === 0 ? "false" : "true");
+      });
+      dots.forEach((b,i) => { b.classList.remove("on"); if (i === idx) { void b.offsetWidth; b.classList.add("on"); } });
+    }
+    function restart(){ clearInterval(timer); if (C.autoplayMs && n > 1 && !mount.classList.contains("paused")) timer = setInterval(() => { idx = (idx + 1) % n; place(); }, C.autoplayMs); }
+    function go(i){ idx = (i + n) % n; place(); restart(); }
+
+    cards.forEach((c,i) => c.addEventListener("click", e => { if (i !== idx) { e.preventDefault(); go(i); } }));
+    dots.forEach((b,i) => b.onclick = () => go(i));
+    mount.querySelectorAll(".gs-arrow").forEach(b => b.onclick = () => go(idx + +b.dataset.dir));
+    mount.addEventListener("mouseenter", () => { clearInterval(timer); mount.classList.add("paused"); });
+    mount.addEventListener("mouseleave", () => { mount.classList.remove("paused"); place(); restart(); });
+    const stage = mount.querySelector(".gs-stage"); let x0 = null;
+    stage.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive:true});
+    stage.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) go(idx + (dx < 0 ? 1 : -1)); x0 = null; });
+    mount.setAttribute("tabindex","0");
+    mount.addEventListener("keydown", e => { if (e.key === "ArrowRight") go(idx + 1); if (e.key === "ArrowLeft") go(idx - 1); });
+    requestAnimationFrame(() => cards.forEach(c => { const t = c.querySelector(".gs-text"); if (t.scrollHeight > t.clientHeight + 2) c.querySelector(".gs-more").hidden = false; }));
+    let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(place, 150); });
+    place(); restart();
+  }
+
   /* ---------- render: floating badge + panel ---------- */
   function renderBadge(d, reviews){
     try { if (sessionStorage.getItem("gr_badge_closed")) return; } catch(e){}
@@ -310,7 +421,7 @@ const GR_CSS = "/* ================= WIDGET STYLES (scoped with .gr-) ==========
       return;
     }
     const reviews = d.reviews.filter(r => r.rating >= (C.minRating||0) && r.text);
-    if (C.carousel && mount && reviews.length) renderCarousel(mount, d, reviews);
+    if (C.carousel && mount && reviews.length) (C.layout === "grid" ? renderCarousel : renderSpotlight)(mount, d, reviews);
     if (C.badge) renderBadge(d, reviews);
   }
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
